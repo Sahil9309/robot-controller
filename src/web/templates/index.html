@@ -93,6 +93,9 @@
             headers: { 'Content-Type': 'text/plain' }
           });
         }, 200); // Send every 200ms
+      })
+      .catch(err => {
+        alert("Camera access denied or not available.");
       });
     </script>
 </body>

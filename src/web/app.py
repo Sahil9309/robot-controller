@@ -41,7 +41,7 @@ def upload_frame():
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
-    return send_from_directory(os.path.join(os.path.dirname(__file__), ".."), filename)
+    return send_from_directory('/tmp', filename)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
