@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Robot Controller Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3 100%);
+            text-align: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-top: 30px;
+            color: #1976d2;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 8px #b3c6e7;
+        }
+        #grid {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 30px auto;
+            background: #fff;
+            border: 2px solid #1976d2;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border-radius: 18px;
+        }
+        .robot {
+            position: absolute;
+            font-size: 56px;
+            filter: drop-shadow(0 0 10px #1976d2);
+            transition: left 0.2s, top 0.2s;
+            user-select: none;
+        }
+        #coords {
+            font-size: 22px;
+            margin-top: 18px;
+            color: #1976d2;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+    </style>
+    <script>
+        // Define grid size and cell size
+        const gridSize = 10; // 10x10 grid
+        const cellSize = 40; // 40px per cell
+
+        function fetchCoordinates() {
+            fetch('/coordinates')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('coords').textContent = `X: ${data.x}, Y: ${data.y}`;
+                    moveRobot(data.x, data.y);
+                });
+        }
+
+        function moveRobot(x, y) {
+            // Clamp values to grid
+            x = Math.max(0, Math.min(gridSize - 1, x));
+            y = Math.max(0, Math.min(gridSize - 1, y));
+            const robot = document.getElementById('robot');
+            robot.style.left = (x * cellSize) + "px";
+            // Invert y for visual (0 at bottom)
+            robot.style.top = ((gridSize - 1 - y) * cellSize) + "px";
+        }
+
+        setInterval(fetchCoordinates, 500); // Update every 0.5s
+        window.onload = fetchCoordinates;
+    </script>
+</head>
+<body>
+    <h1>Robot Controller Visualization</h1>
+    <div id="grid">
+        <span id="robot" class="robot" style="left:0;top:360px;">🤖</span>
+    </div>
+    <div id="coords">Loading...</div>
+    <video id="webcam" autoplay playsinline width="320" height="240" style="display:none"></video>
+    <script>
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        document.getElementById('webcam').srcObject = stream;
+        const video = document.getElementById('webcam');
+        const canvas = document.createElement('canvas');
+        canvas.width = 320;
+        canvas.height = 240;
+        setInterval(() => {
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // Send frame to Flask backend
+          fetch('/upload_frame', {
+            method: 'POST',
+            body: canvas.toDataURL('image/jpeg'),
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        }, 200); // Send every 200ms
+      });
+    </script>
+</body>
+</html>
