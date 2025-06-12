@@ -3,3 +3,4 @@ requests
 numpy
 Pillow
 flask-cors
+flask-socketio
