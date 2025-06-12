@@ -9,7 +9,7 @@ COORD_FILE = "/tmp/coordinates.txt"
 FRAME_FILE = "/tmp/last_frame.jpg"
 
 # Replace with your phone's IP and port
-FRAME_URL = "https://robot-controller-2.onrender.com"  # <-- Change this to your actual IP:port
+FRAME_URL = "https://robot-controller-2.onrender.com/static/last_frame.jpg"  # <-- Change this to your actual IP:port
 
 RENDER_URL = "https://robot-controller-2.onrender.com"
 
