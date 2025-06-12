@@ -40,6 +40,7 @@
             letter-spacing: 1px;
         }
     </style>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script>
         // Define grid size and cell size
         const gridSize = 10; // 10x10 grid
@@ -66,6 +67,26 @@
 
         setInterval(fetchCoordinates, 500); // Update every 0.5s
         window.onload = fetchCoordinates;
+
+        const socket = io(); // Connect to your signaling server
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          .then(stream => {
+            const peer = new RTCPeerConnection();
+            stream.getTracks().forEach(track => peer.addTrack(track, stream));
+
+            peer.onicecandidate = event => {
+              if (event.candidate) socket.emit('ice-candidate', event.candidate);
+            };
+
+            peer.createOffer().then(offer => {
+              peer.setLocalDescription(offer);
+              socket.emit('offer', offer);
+            });
+
+            socket.on('answer', answer => peer.setRemoteDescription(answer));
+            socket.on('ice-candidate', candidate => peer.addIceCandidate(candidate));
+          });
     </script>
 </head>
 <body>
@@ -86,13 +107,12 @@
         setInterval(() => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          // Send frame to Flask backend
           fetch('/upload_frame', {
             method: 'POST',
             body: canvas.toDataURL('image/jpeg'),
             headers: { 'Content-Type': 'text/plain' }
           });
-        }, 200); // Send every 200ms
+        }, 200);
       })
       .catch(err => {
         alert("Camera access denied or not available.");

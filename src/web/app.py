@@ -1,4 +1,6 @@
 from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 import os
 import base64
 
@@ -6,6 +8,8 @@ COORD_FILE = "/tmp/coordinates.txt"
 FRAME_FILE = "/tmp/last_frame.jpg"
 
 app = Flask(__name__)
+CORS(app)
+socketio = SocketIO(app)
 
 @app.route('/')
 def index():
@@ -43,6 +47,18 @@ def upload_frame():
 def static_files(filename):
     return send_from_directory('/tmp', filename)
 
+@socketio.on('offer')
+def handle_offer(data):
+    emit('offer', data, broadcast=True)
+
+@socketio.on('answer')
+def handle_answer(data):
+    emit('answer', data, broadcast=True)
+
+@socketio.on('ice-candidate')
+def handle_ice(data):
+    emit('ice-candidate', data, broadcast=True)
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port)
