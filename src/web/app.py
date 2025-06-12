@@ -21,6 +21,15 @@ def coordinates():
         x, y = 0, 0
     return jsonify({"x": x, "y": y})
 
+@app.route('/set_coordinates', methods=['POST'])
+def set_coordinates():
+    data = request.get_json()
+    x = data.get('x', 0)
+    y = data.get('y', 0)
+    with open(COORD_FILE, "w") as f:
+        f.write(f"{x},{y}")
+    return jsonify({"status": "ok"})
+
 @app.route('/upload_frame', methods=['POST'])
 def upload_frame():
     data_url = request.data.decode()

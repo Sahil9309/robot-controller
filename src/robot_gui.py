@@ -9,11 +9,19 @@ COORD_FILE = "/tmp/coordinates.txt"
 FRAME_FILE = "/tmp/last_frame.jpg"
 
 # Replace with your phone's IP and port
-FRAME_URL = "http://192.168.182.63:8080/shot.jpg"  # <-- Change this to your actual IP:port
+FRAME_URL = "https://robot-controller-2.onrender.com"  # <-- Change this to your actual IP:port
+
+RENDER_URL = "https://robot-controller-2.onrender.com"
 
 def save_coordinates(x, y):
-    with open(COORD_FILE, "w") as f:
-        f.write(f"{x},{y}")
+    try:
+        requests.post(
+            f"{RENDER_URL}/set_coordinates",
+            json={"x": x, "y": y},
+            timeout=2
+        )
+    except Exception as e:
+        print("Failed to update coordinates on server:", e)
 
 class RobotGUI:
     def __init__(self, master):
