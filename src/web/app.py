@@ -1,11 +1,9 @@
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import os
-import base64
 
 COORD_FILE = "/tmp/coordinates.txt"
-FRAME_FILE = "/tmp/last_frame.jpg"
 
 app = Flask(__name__)
 CORS(app)
@@ -34,19 +32,6 @@ def set_coordinates():
         f.write(f"{x},{y}")
     return jsonify({"status": "ok"})
 
-@app.route('/upload_frame', methods=['POST'])
-def upload_frame():
-    data_url = request.data.decode()
-    if data_url.startswith('data:image'):
-        header, encoded = data_url.split(',', 1)
-        with open(FRAME_FILE, "wb") as f:
-            f.write(base64.b64decode(encoded))
-    return '', 204
-
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory('/tmp', filename)
-
 @socketio.on('offer')
 def handle_offer(data):
     emit('offer', data, broadcast=True)
@@ -60,5 +45,5 @@ def handle_ice(data):
     emit('ice-candidate', data, broadcast=True)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5050))
     socketio.run(app, host='0.0.0.0', port=port)

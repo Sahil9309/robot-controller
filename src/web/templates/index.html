@@ -95,28 +95,5 @@
         <span id="robot" class="robot" style="left:0;top:360px;">🤖</span>
     </div>
     <div id="coords">Loading...</div>
-    <video id="webcam" autoplay playsinline width="320" height="240" style="display:none"></video>
-    <script>
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        document.getElementById('webcam').srcObject = stream;
-        const video = document.getElementById('webcam');
-        const canvas = document.createElement('canvas');
-        canvas.width = 320;
-        canvas.height = 240;
-        setInterval(() => {
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          fetch('/upload_frame', {
-            method: 'POST',
-            body: canvas.toDataURL('image/jpeg'),
-            headers: { 'Content-Type': 'text/plain' }
-          });
-        }, 200);
-      })
-      .catch(err => {
-        alert("Camera access denied or not available.");
-      });
-    </script>
 </body>
 </html>

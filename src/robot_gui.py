@@ -8,9 +8,8 @@ from io import BytesIO
 COORD_FILE = "/tmp/coordinates.txt"
 FRAME_FILE = "/tmp/last_frame.jpg"
 
-# Replace with your phone's IP and port
-FRAME_URL = "https://robot-controller-2.onrender.com/static/last_frame.jpg"
-
+# URL to fetch latest uploaded frame from phone via Flask backend
+FRAME_URL = "https://robot-controller-2.onrender.com/get_frame"
 RENDER_URL = "https://robot-controller-2.onrender.com"
 
 def save_coordinates(x, y):
@@ -61,7 +60,6 @@ class RobotGUI:
         self.right_btn = tk.Button(btn_frame, text="▶", command=lambda: self.move(1, 0), **btn_style)
         self.right_btn.grid(row=1, column=2, padx=8, pady=8)
 
-        # Show Webcam Button
         self.show_webcam = False
         self.webcam_button = tk.Button(master, text="Show Webcam", command=self.toggle_webcam,
                                        font=("Arial", 14, "bold"), bg="#2196F3", fg="white",
@@ -76,7 +74,7 @@ class RobotGUI:
         self.controller.update_coordinates(dx, dy)
         x, y = self.controller.get_coordinates()
         self.coord_label.config(text=f"Coordinates: ({x}, {y})")
-        save_coordinates(x, y)  # Save to file
+        save_coordinates(x, y)
 
     def toggle_webcam(self):
         self.show_webcam = not self.show_webcam
@@ -96,12 +94,11 @@ class RobotGUI:
                 img = img.resize((320, 240))
                 self.webcam_img = ImageTk.PhotoImage(img)
                 self.webcam_label.config(image=self.webcam_img)
-            except Exception:
-                pass
+            except Exception as e:
+                print("Webcam error:", e)
             self.master.after(200, self.update_webcam)
 
 if __name__ == "__main__":
-    # Save initial coordinates
     save_coordinates(0, 0)
     root = tk.Tk()
     app = RobotGUI(root)
