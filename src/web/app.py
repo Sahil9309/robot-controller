@@ -5,12 +5,14 @@ import os
 
 COORD_FILE = "/tmp/coordinates.txt"
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
+
 CORS(app)
 socketio = SocketIO(app)
 
 @app.route('/')
 def index():
+    print("Serving index.html")
     return render_template('index.html')
 
 @app.route('/coordinates')
