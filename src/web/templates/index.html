@@ -287,64 +287,33 @@
 
         // Fetch coordinates and arm positions from server
         function updateRobotFromServer() {
-            const RENDER_URL = "https://robot-controller-2.onrender.com";
-            
-            fetch(`${RENDER_URL}/get_coordinates`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.x !== undefined && data.y !== undefined) {
-                        robotPosition.x = data.x;
-                        robotPosition.y = data.y;
-                        
-                        // Update display
-                        document.getElementById('coordinates').textContent = 
-                            `Position: (${data.x}, ${data.y})`;
-                        
-                        // Update robot position in 3D space
-                        if (robot) {
-                            robot.position.x = data.x * 0.1;
-                            robot.position.z = data.y * 0.1;
-                        }
-                    }
+    const RENDER_URL = "https://robot-controller-2.onrender.com";
 
-                    // Update arm positions if available
-                    if (data.leftShoulder !== undefined && leftShoulder) {
-                        leftShoulder.rotation.x = (data.leftShoulder * Math.PI) / 180;
-                    }
-                    if (data.leftElbow !== undefined && leftElbow) {
-                        leftElbow.rotation.x = (data.leftElbow * Math.PI) / 180;
-                    }
-                    if (data.rightShoulder !== undefined && rightShoulder) {
-                        rightShoulder.rotation.x = (data.rightShoulder * Math.PI) / 180;
-                    }
-                    if (data.rightElbow !== undefined && rightElbow) {
-                        rightElbow.rotation.x = (data.rightElbow * Math.PI) / 180;
-                    }
-                })
-                .catch(error => {
-                    console.log('Failed to fetch robot state:', error);
-                });
-        }
+    fetch(`${RENDER_URL}/get_robot_state`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.coordinates?.x !== undefined && data.coordinates?.y !== undefined) {
+                robotPosition.x = data.coordinates.x;
+                robotPosition.y = data.coordinates.y;
 
-        // Initialize and start polling
-        window.onload = function() {
-            initThreeJS();
-            updateRobotFromServer();
-            
-            // Poll for updates every 100ms
-            setInterval(updateRobotFromServer, 100);
-        };
+                document.getElementById('coordinates').textContent =
+                    `Position: (${robotPosition.x}, ${robotPosition.y})`;
 
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            const container = document.getElementById('robot-viewer');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-            renderer.setSize(width, height);
+                if (robot) {
+                    robot.position.x = robotPosition.x * 0.1;
+                    robot.position.z = robotPosition.y * 0.1;
+                }
+            }
+
+            if (data.jointAngles) {
+                if (leftShoulder) leftShoulder.rotation.x = (data.jointAngles.shoulder * Math.PI) / 180;
+                if (rightShoulder) rightShoulder.rotation.x = (data.jointAngles.shoulder * Math.PI) / 180;
+
+                if (leftElbow) leftElbow.rotation.x = (data.jointAngles.elbow * Math.PI) / 180;
+                if (rightElbow) rightElbow.rotation.x = (data.jointAngles.elbow * Math.PI) / 180;
+            }
+        })
+        .catch(error => {
+            console.log('Failed to fetch robot state:', error);
         });
-    </script>
-</body>
-</html>
+}
