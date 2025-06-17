@@ -317,3 +317,8 @@
             console.log('Failed to fetch robot state:', error);
         });
 }
+window.onload = function () {
+    initThreeJS();
+    updateRobotFromServer();
+    setInterval(updateRobotFromServer, 300); // Fetch data every 300ms
+};
